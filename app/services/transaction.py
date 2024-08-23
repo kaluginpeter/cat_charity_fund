@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, not_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.charity_project import CharityProject
@@ -26,7 +26,7 @@ class TransactionInvesting:
         """
         open_charity_projects = await session.execute(
             select(CharityProject).where(
-                CharityProject.fully_invested == False
+                not_(CharityProject.fully_invested)
             ).order_by(CharityProject.create_date)
         )
         open_charity_projects = open_charity_projects.scalars().all()
@@ -35,7 +35,7 @@ class TransactionInvesting:
 
         available_donations = await session.execute(
             select(Donation).where(
-                Donation.fully_invested == False
+                not_(Donation.fully_invested)
             ).order_by(Donation.create_date)
         )
         available_donations = available_donations.scalars().all()
