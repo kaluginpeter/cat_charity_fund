@@ -58,7 +58,7 @@ class CharityProjectCrud(
                 select(self.model).where(self.model.name == project_name)
             )
         )
-        return charity_project.scalars().all()
+        return charity_project.scalars().first()
 
 
 charity_project_crud = CharityProjectCrud(CharityProject)

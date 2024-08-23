@@ -8,6 +8,27 @@ from app.models.donation import Donation
 
 
 class TransactionInvesting:
+    async def get_all_available_objects(
+        self,
+        model,
+        session: AsyncSession
+    ) -> list[object]:
+        """
+        Функция находит все доступные объекты из базы данных
+        и возвращает их, упорядочив по дате(от старых к новым),
+        если таковые имеются. В противном случае
+        будет возвращен пустой список.
+        Под "доступным" подразумевается - объект со
+        значением False у поля fully_invested.
+        """
+        available_objects = await session.execute(
+            select(model).where(
+                not_(model.fully_invested)
+            ).order_by(model.create_date)
+        )
+        available_objects = available_objects.scalars().all()
+        return available_objects
+
     async def recalculate_project_status(
         self,
         project: CharityProject,
@@ -23,6 +44,17 @@ class TransactionInvesting:
             project.close_date = datetime.now()
             session.add(project)
             await session.commit()
+
+    def note_object_as_closed(self, instance) -> None:
+        """
+        Функция, которая устанавливает значения данному объекту.
+        invested_amount на full_amount;
+        fully_invested на True;
+        close_date на текущее время;
+        """
+        instance.invested_amount = instance.full_amount
+        instance.fully_invested = True
+        instance.close_date = datetime.now()
 
     async def launch_investing_proccess(self, session: AsyncSession) -> None:
         """
@@ -73,21 +105,15 @@ class TransactionInvesting:
             и M - разрмер списка с доступными пожертвованиями.
         Пространственная сложность аналогична асимптотической.
         """
-        open_charity_projects = await session.execute(
-            select(CharityProject).where(
-                not_(CharityProject.fully_invested)
-            ).order_by(CharityProject.create_date)
+        open_charity_projects = await self.get_all_available_objects(
+            CharityProject, session
         )
-        open_charity_projects = open_charity_projects.scalars().all()
         if not open_charity_projects:
             return
 
-        available_donations = await session.execute(
-            select(Donation).where(
-                not_(Donation.fully_invested)
-            ).order_by(Donation.create_date)
+        available_donations = await self.get_all_available_objects(
+            Donation, session
         )
-        available_donations = available_donations.scalars().all()
         if not available_donations:
             return
 
@@ -110,28 +136,20 @@ class TransactionInvesting:
             if actual_donation_amount > needed_project_amount:
                 current_donation.invested_amount += needed_project_amount
 
-                current_project.invested_amount = current_project.full_amount
-                current_project.fully_invested = True
-                current_project.close_date = datetime.now()
+                self.note_object_as_closed(current_project)
 
                 project_index += 1
             elif actual_donation_amount == needed_project_amount:
-                current_donation.invested_amount = current_donation.full_amount
-                current_donation.fully_invested = True
-                current_donation.close_date = datetime.now()
+                self.note_object_as_closed(current_donation)
 
-                current_project.invested_amount = current_project.full_amount
-                current_project.fully_invested = True
-                current_project.close_date = datetime.now()
+                self.note_object_as_closed(current_project)
 
                 project_index += 1
                 donation_index += 1
             else:
                 current_project.invested_amount += actual_donation_amount
 
-                current_donation.invested_amount = current_donation.full_amount
-                current_donation.fully_invested = True
-                current_donation.close_date = datetime.now()
+                self.note_object_as_closed(current_donation)
 
                 donation_index += 1
 

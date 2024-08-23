@@ -32,7 +32,7 @@ async def check_charity_project_name_duplicate(
     charity_project = await charity_project_crud.get_by_name(
         project_name, session
     )
-    if charity_project and charity_project[0].id != old_project_id:
+    if charity_project and charity_project.id != old_project_id:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail=CHARITY_PROJECT_DUPLICATE_NAME_ERROR

@@ -13,7 +13,7 @@ MIN_LENGTH_CONSTRAINT_ERROR = 'Поле {} должно иметь хотя бы
 
 
 class CharityProject(InvestmentBase):
-    __tablename__ = 'charityproject'
+    __tablename__ = 'charity_project'
     name = Column(String(100), unique=True, nullable=False)
     description = Column(Text, nullable=False)
 

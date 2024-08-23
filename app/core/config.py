@@ -13,7 +13,7 @@ DEFAULT_SECRET_KEY = 'supersecret'
 class Settings(BaseSettings):
     app_title: str = APP_TITLE
     app_description: str = APP_DESCRIPTION
-    database_url: str = 'sqlite+aiosqlite:///./fastapi.db'
+    database_url: str = 'sqlite+aiosqlite:///./cat_charity_fund_database.db'
     secret: str = DEFAULT_SECRET_KEY
     first_superuser_email: Optional[str] = None
     first_superuser_password: Optional[str] = None

@@ -1,4 +1,5 @@
 from typing import Optional, Union
+import logging
 
 from fastapi import Depends, Request
 from fastapi_users import (
@@ -64,7 +65,7 @@ class UserManager(IntegerIDMixin, BaseUserManager):
     async def on_after_register(
         self, user: User, request: Optional[Request] = None
     ) -> None:
-        print(AFTER_USER_REGISTRATION_MESSAGE.format(user))
+        logging.info(AFTER_USER_REGISTRATION_MESSAGE.format(user))
 
 
 async def get_user_manager(
