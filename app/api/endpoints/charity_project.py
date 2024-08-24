@@ -14,7 +14,7 @@ from app.schemas.charity_project import (
     CharityProjectCreate, CharityProjectUpdate, CharityProjectDB
 )
 from app.core.user import current_superuser
-from app.services.transaction import transaction_mechanism
+from app.services.money_transaction import transaction_mechanism
 
 
 CHARITY_PROJECT_PREFIX_URL = '/charity_project'
